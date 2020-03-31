@@ -6,7 +6,7 @@ def ejercicio_2():
     my_list = []
     for x in range(1, int(m)+1):
         print("imprimo esto: ", x, " veces")
-        my_list.append(int(str(n)*x))
+        my_list.append(int(n*x))
     
     print(my_list)
     print("El resultado de la suma es: ", sum(my_list))
