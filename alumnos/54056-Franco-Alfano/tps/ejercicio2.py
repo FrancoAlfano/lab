@@ -4,7 +4,7 @@ def ejercicio_2():
     n = input()
     m = input()
     my_list = []
-    for x in range(1, m+1):
+    for x in range(1, int(m)+1):
         print("imprimo esto: ", x, " veces")
         my_list.append(int(str(n)*x))
     
