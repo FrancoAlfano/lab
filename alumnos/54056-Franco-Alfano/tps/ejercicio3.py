@@ -1,4 +1,8 @@
 #Ejercicio 3
+import numpy as np
+import scipy
+import matplotlib.pyplot as plt
+
 def ejercicio_3():
     print("Ingrese numeros, termine con quit: ")
     my_list = []
@@ -16,3 +20,7 @@ def ejercicio_3():
     plt.bar(bin_edges[:-1], hist, width = 1)
     plt.xlim(min(bin_edges), max(bin_edges))
     plt.show()
+
+
+if __name__ == "__main__":
+    ejercicio_3()

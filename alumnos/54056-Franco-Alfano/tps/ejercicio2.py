@@ -11,6 +11,6 @@ def ejercicio_2():
     print(my_list)
     print("El resultado de la suma es: ", sum(my_list))
 
-import numpy as np
-import scipy
-import matplotlib.pyplot as plt
+
+if __name__ == "__main__":
+    ejercicio_2()
