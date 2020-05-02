@@ -1,6 +1,7 @@
 #Trabajo Practico n1
 
 import argparse
+import os
 
 def tp_1():
     parser = argparse.ArgumentParser()
@@ -17,6 +18,10 @@ def tp_1():
     print("el numero de verde es:", args.green)
     print("el numero de azul es:", args.blue)
     print("el numero de el tamaño es:", args.size)
+    
+    with open(args.file, 'rb') as archivo:
+        for line in archivo:
+            print(line)
 
 
 
