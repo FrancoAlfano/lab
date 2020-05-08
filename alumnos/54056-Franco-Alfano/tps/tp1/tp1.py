@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 
 def tp_1():
     parser = argparse.ArgumentParser()
@@ -12,17 +13,40 @@ def tp_1():
     parser.add_argument("-f", "--file", help="nombre de la imagen", required=True)
 
     args = parser.parse_args()
-
-    print("el nombre del archivo es:", args.file)
-    print("el numero de rojo es:", args.red)
-    print("el numero de verde es:", args.green)
-    print("el numero de azul es:", args.blue)
-    print("el numero de el tamaño es:", args.size)
+    red = int(args.red)
+    green = int(args.green)
+    blue = int(args.blue)
+    size = int(args.size)
+    archivo = args.file   
     
-    with open(args.file, 'rb') as archivo:
-        for line in archivo:
-            print(line)
+    fd = os.open(archivo, os.O_RDONLY)
+    fin = os.open("test.ppm", os.O_WRONLY|os.O_CREAT)
 
+    while True:
+        leido = os.read(fd, size)        
+        header = check_header(leido)      
+        image = check_raster(leido)
+        break
+
+    os.write(fin, str.encode(header))
+
+    '''
+    if len(leido) < int(args.size):
+        print("\n\n\n END OF FILE!")
+        break
+    '''
+
+def check_header(data):
+    header_re = r'P6\\n\d*\s\d*\\n\d*'
+    sucess = re.search(header_re, str(data))
+    print(sucess.group(0))
+    return sucess.group(0)
+
+def check_raster(data):
+    raster_re = r'P6\\n\d*\s\d*\\n\d*'
+    sucess = re.search(header_re, str(data))
+    print(sucess.group(0))
+    return sucess.group(0)
 
 
 if __name__ == "__main__":
