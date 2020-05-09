@@ -21,8 +21,19 @@ def tp_1():
     
     fd = os.open(archivo, os.O_RDONLY)
     fin = os.open("prueba.ppm", os.O_RDWR|os.O_CREAT)
-
+    num = os.open("num.ppm", os.O_RDWR|os.O_CREAT)
+    best = os.open("best.ppm", os.O_RDWR|os.O_CREAT)
+    
     leido = os.read(fd, 100)
+    print("\nLEIDO TYPE ", type(leido))
+    os.write(best, leido)
+    print("\n\nLEIDOOOO: ", leido)
+    lei2 = str(leido)
+    print("\n\nLEIDO AS STRING: ", lei2)
+    b1 = bytes(lei2, encoding = 'utf-8')
+    print("\n\nBYYYYYYYYTES: ",b1)
+    os.write(num, b1)
+
     header = check_header(leido)
     raster = check_raster(leido)
 
@@ -34,6 +45,8 @@ def tp_1():
 
     os.close(fd)
     os.close(fin)
+    os.close(num)
+    os.close(best)
 
     '''
     while True:
@@ -51,9 +64,8 @@ def check_header(data):
     header_re = r'(P6\\n)((#\s*\w*\s*\w*\\n\d* \d*\\n\d*\\n)|(\d* \d*\\n\d*\\n))'
     sucess = re.search(header_re, str(data))
     header = sucess.group(0)
-    fin = header.split()
-    print(fin)
-    return fin
+    print("\n\nHEADERRRRrrrrrRRRR: ", header)
+    return header
 
 def check_raster(data):
     raster_re = r'(P6\\n)((#\s*\w*\s*\w*\\n\d* \d*\\n\d*\\n)|(\d* \d*\\n\d*\\n))(.*)'
