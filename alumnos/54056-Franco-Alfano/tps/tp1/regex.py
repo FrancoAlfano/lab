@@ -20,27 +20,16 @@ def tp_1():
     archivo = args.file   
     
     fd = os.open(archivo, os.O_RDONLY)
-    fin = os.open("prueba.ppm", os.O_RDWR|os.O_CREAT)
+    fin = os.open("test.ppm", os.O_WRONLY|os.O_CREAT)
 
-    leido = os.read(fd, 100)
-    header = check_header(leido)
-    raster = check_raster(leido)
-
-    header_byte = str.encode(header)
-    raster_byte = str.encode(raster)
-
-    os.write(fin, header_byte)
-    os.write(fin, raster_byte)
-
-    os.close(fd)
-    os.close(fin)
-
-    '''
     while True:
         leido = os.read(fd, size)        
         header = check_header(leido)      
+        image = check_raster(leido)
         break
-    '''
+
+    os.write(fin, str.encode(header))
+
     '''
     if len(leido) < int(args.size):
         print("\n\n\n END OF FILE!")
@@ -48,17 +37,17 @@ def tp_1():
     '''
 
 def check_header(data):
-    header_re = r'(P6\\n)((#\s*\w*\s*\w*\\n\d* \d*\\n\d*\\n)|(\d* \d*\\n\d*\\n))'
+    header_re = r'P6\\n\d*\s\d*\\n\d*'
     sucess = re.search(header_re, str(data))
-    header = sucess.group(0)
-    fin = header.split()
-    print(fin)
-    return fin
+    print(sucess.group(0))
+    return sucess.group(0)
 
 def check_raster(data):
-    raster_re = r'(P6\\n)((#\s*\w*\s*\w*\\n\d* \d*\\n\d*\\n)|(\d* \d*\\n\d*\\n))(.*)'
-    success = re.search(raster_re, str(data))
-    return success.group(5)
+    raster_re = r'P6\\n\d*\s\d*\\n\d*'
+    sucess = re.search(header_re, str(data))
+    print(sucess.group(0))
+    return sucess.group(0)
+
 
 if __name__ == "__main__":
     tp_1()
