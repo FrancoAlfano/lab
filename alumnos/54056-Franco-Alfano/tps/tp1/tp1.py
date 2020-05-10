@@ -3,6 +3,7 @@
 import argparse
 import os
 import re
+import codecs
 
 def tp_1():
     parser = argparse.ArgumentParser()
@@ -17,44 +18,50 @@ def tp_1():
     green = int(args.green)
     blue = int(args.blue)
     size = int(args.size)
-    archivo = args.file   
+    archivo = args.file
+    img = []
     
     fd = os.open(archivo, os.O_RDONLY)
     fin = os.open("prueba.ppm", os.O_RDWR|os.O_CREAT)
     
-    leido = os.read(fd, size)
-    s_leido = bytes.decode(leido)
+    while True:
+        leido = os.read(fd, size)        
+        img.append(leido)  
+        
+        if len(leido) < size:
+            print("\n\n\n END OF FILE!")
+            break
+    
+    listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
+    
 
-    header = check_header(s_leido)
-    raster = check_raster(s_leido)
+    bytetost = str.encode(listToStr, encoding = "ISO-8859-1")
+
+    os.write(fin, bytetost)
+
+    header = check_header(listToStr)
+    raster = check_raster(listToStr)
 
     if header != 0:
         header_byte = str.encode(header)
-        os.write(fin, header_byte)
+        #os.write(fin, header_byte)
     else:
         print("error en header")
 
     if raster != 0:
         raster_byte = str.encode(raster)
-        os.write(fin, raster_byte)
+        #os.write(fin, raster_byte)
     else:
-        print("error en raster")  
-    
+        print("error en raster")
+
+    '''
+    for x in range(len(img)):
+        os.write(fin, img[x])
+    '''
 
     os.close(fd)
-    os.close(fin)
+    os.close(fin)    
 
-    '''
-    while True:
-        leido = os.read(fd, size)        
-        header = check_header(leido)      
-        break
-    '''
-    '''
-    if len(leido) < int(args.size):
-        print("\n\n\n END OF FILE!")
-        break
-    '''
 
 def check_header(data):
     header_re = r'(P6\n)((#\s*\w*\s*\w*\n\d* \d*\n\d*\n)|(\d* \d*\n\d*\n))'
