@@ -4,6 +4,7 @@ import argparse
 import os
 import re
 import codecs
+import binascii
 
 def tp_1():
     parser = argparse.ArgumentParser()
@@ -14,6 +15,7 @@ def tp_1():
     parser.add_argument("-f", "--file", help="nombre de la imagen", required=True)
 
     args = parser.parse_args()
+
     red = int(args.red)
     green = int(args.green)
     blue = int(args.blue)
@@ -23,18 +25,18 @@ def tp_1():
     
     fd = os.open(archivo, os.O_RDONLY)
     fin = os.open("prueba.ppm", os.O_RDWR|os.O_CREAT)
-    
+
     while True:
         leido = os.read(fd, size)        
-        img.append(leido)  
+        img.append(leido)
         
         if len(leido) < size:
             print("\n\n\n END OF FILE!")
             break
-    
-    listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
-    
 
+
+    listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
+  
     bytetost = str.encode(listToStr, encoding = "ISO-8859-1")
 
     os.write(fin, bytetost)
