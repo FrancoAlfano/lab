@@ -3,8 +3,7 @@
 import argparse
 import os
 import re
-import codecs
-import binascii
+import multiprocessing
 
 def tp_1():
     parser = argparse.ArgumentParser()
@@ -16,9 +15,18 @@ def tp_1():
 
     args = parser.parse_args()
 
-    red = int(args.red)
-    green = int(args.green)
-    blue = int(args.blue)
+    if args.red != None:
+        red = int(args.red)
+        print(red)
+    
+    if args.green != None:
+        green = int(args.green)
+        print(green)
+    
+    if args.blue != None:
+        blue = int(args.blue)
+        print(blue)
+
     size = int(args.size)
     archivo = args.file
     img = []
@@ -33,13 +41,21 @@ def tp_1():
         if len(leido) < size:
             print("\n\n\n END OF FILE!")
             break
+    
+    qData = multiprocessing.Queue()
+    qFin = multiprocessing.Queue()
+    qData.put(img)
+    qFin.put(fin)
 
+    proc = multiprocessing.Process(target=do_nothing,args=(qData,qFin,))
+    proc.start()
+    proc.join()
 
     listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
   
     bytetost = str.encode(listToStr, encoding = "ISO-8859-1")
 
-    os.write(fin, bytetost)
+    #os.write(fin, bytetost)
 
     header = check_header(listToStr)
     raster = check_raster(listToStr)
@@ -63,6 +79,15 @@ def tp_1():
 
     os.close(fd)
     os.close(fin)    
+
+def do_nothing(qData, qFd):
+    print("hola mi nombre es:", os.getpid(), " y mi padre es: ", os.getppid())
+    fl = qFd.get()
+    data = qData.get()
+    for x in range(len(data)):
+        os.write(fl, data[x])
+
+    print("done")
 
 
 def check_header(data):
