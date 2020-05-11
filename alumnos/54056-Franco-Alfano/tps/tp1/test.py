@@ -1,98 +1,124 @@
+#Trabajo Practico n1
+
+import argparse
+import os
 import re
-import numpy
+import multiprocessing
 
-def pbm2numpy(filename):
-    """
-    Read a PBM into a numpy array.  Only supports ASCII PBM for now.
-    """
-    fin = None
-    debug = True
+def tp_1():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-r", "--red", help="Bytes de color rojo")
+    parser.add_argument("-g", "--green", help="Bytes de color verde")
+    parser.add_argument("-b", "--blue", help="Bytes de color azul")
+    parser.add_argument("-s", "--size", help="Bloque la lectura", required=True)
+    parser.add_argument("-f", "--file", help="nombre de la imagen", required=True)
 
-    try:
-        fin = open(filename, 'r')
+    args = parser.parse_args()
 
-        while True:
-            header = fin.readline().strip()
-            if header.startswith('#'):
-                continue
-            elif header == 'P1':
-                break
-            elif header == 'P4':
-                assert False, 'Raw PBM reading not implemented yet'
-            else:
-                #
-                # Unexpected header.
-                #
-                if debug:
-                    print ('Bad mode:'), header
-                return None
+    if args.red != None:
+        red = int(args.red)
+        print(red)
+    
+    if args.green != None:
+        green = int(args.green)
+        print(green)
+    
+    if args.blue != None:
+        blue = int(args.blue)
+        print(blue)
 
-        rows, cols = 0, 0
-        while True:
-            header = fin.readline().strip()
-            if header.startswith('#'):
-                continue
+    size = int(args.size)
+    archivo = args.file
+    img = []
+    
+    fd = os.open(archivo, os.O_RDONLY)
+    fin = os.open("prueba.ppm", os.O_RDWR|os.O_CREAT)
 
-            match = re.match(r'^(\d+) (\d+)$', header)
-            if match == None:
-                if debug:
-                    print ('Bad size:'), repr(header)
-                return None
-
-            cols, rows = match.groups()
+    while True:
+        leido = os.read(fd, size)        
+        img.append(leido)
+        
+        if len(leido) < size:
+            print("\n\n\nEND OF FILE!")
             break
+    
+    q_header = multiprocessing.Queue()
+    q_raster = multiprocessing.Queue()
+    q_fin = multiprocessing.Queue()
+    q_fin.put(fin)    
 
-        rows = int(rows)
-        cols = int(cols)
+    listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
+  
 
-        assert (rows, cols) != (0, 0)
+    header = check_header(listToStr)
+    raster = check_raster(listToStr)
 
-        if debug:
-            print ('Rows: %d, cols: %d') % (rows, cols)
+    #bytetost = str.encode(listToStr, encoding = "ISO-8859-1")
+    
+    if header != 0:
+        header_byte = str.encode(header, encoding = "ISO-8859-1")
+        q_header.put(header_byte)
+    else:
+        print("error en header")
 
-        #
-        # Initialise a 2D numpy array 
-        #
-        result = numpy.zeros((rows, cols), numpy.int8)
+    if raster != 0:
+        raster_byte = str.encode(raster, encoding = "ISO-8859-1")
+        q_raster.put(raster_byte)
+    else:
+        print("error en raster")
+    
+    proc = multiprocessing.Process(target=make_file,args=(q_header, q_raster,q_fin,))    
+    proc.start()
+    proc.join()
 
-        pxs = []
+    '''
+    for x in range(len(img)):
+        os.write(fin, img[x])
+    '''
 
-        # 
-        # Read to EOF.
-        # 
-        while True:
-            line = fin.readline().strip()
-            if line == '':
-                break
+    os.close(fd)
+    os.close(fin)
 
-            for c in line:
-                if c == ' ':
-                    continue
+def make_file(q_header, q_raster, q_fin):
+    print("hola mi nombre es:", os.getpid(), " y mi padre es: ", os.getppid())
+    fin = q_fin.get()
+    header = q_header.get()
+    raster = q_raster.get()
 
-                pxs.append(int(c))
+    br = int.from_bytes(raster, byteorder='big')
 
-        if len(pxs) != rows*cols:
-            if debug:
-                print ('Insufficient image data:'), len(pxs)
-            return None
+    print(str(br)[0:50])
+    
+    br = br*2
 
-        for r in range(rows):
-            for c in range(cols):
-                #
-                # Index into the numpy array and set the pixel value.
-                #
-                result[r, c] = pxs[r*cols + c]
-
-        return result
-
-    finally:
-        if fin != None:
-            fin.close()
-        fin = None
-
-    return None
+    br2 = br.to_bytes((br.bit_length() + 7) // 8, 'big')
 
 
+    os.write(fin, header)
+    os.write(fin, br2)
+
+    print("done")
+
+
+def check_header(data):
+    header_re = r'(P6\n)((#\s*\w*\s*\w*\n\d* \d*\n\d*\n)|(\d* \d*\n\d*\n))'
+    try:
+        sucess = re.search(header_re, data)
+        header = sucess.group(0)
+        return header
+    except AttributeError as err:
+        print("Attribute ERROR: {0}".format(err))
+        return 0
+
+def check_raster(data):
+    try:
+        raster_re = r'(P6\n)((#\s*\w*\s*\w*\n\d* \d*\n\d*\n)|(\d* \d*\n\d*\n))([\s\S]*)'
+        success = re.search(raster_re, data)
+        raster = success.group(5)
+        return raster
+    except AttributeError as err:
+        print("Attribute Error: {0}".format(err))
+        return 0
 
 if __name__ == "__main__":
-	pbm2numpy("dog.ppm")
+    tp_1()

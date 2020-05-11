@@ -77,8 +77,7 @@ def tp_1():
     '''
 
     os.close(fd)
-    os.close(fin)    
-
+    os.close(fin)
 
 def make_file(q_header, q_raster, q_fin):
     print("hola mi nombre es:", os.getpid(), " y mi padre es: ", os.getppid())
