@@ -45,10 +45,11 @@ def tp_1():
     q_header = multiprocessing.Queue()
     q_raster = multiprocessing.Queue()
     q_fin = multiprocessing.Queue()
-    q_fin.put(fin)    
+    q_fin.put(fin)
+
 
     listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
-  
+
 
     header = check_header(listToStr)
     raster = check_raster(listToStr)
@@ -57,6 +58,9 @@ def tp_1():
     
     if header != 0:
         header_byte = str.encode(header, encoding = "ISO-8859-1")
+        #for x in header_byte[0:2]:
+        #    result = x*2
+        #    print(result)
         q_header.put(header_byte)
     else:
         print("error en header")
@@ -85,11 +89,19 @@ def make_file(q_header, q_raster, q_fin):
     header = q_header.get()
     raster = q_raster.get()
 
-    br = int.from_bytes(raster, byteorder='big')
+    #print("EL test es: ", test)
 
-    print(str(br)[0:50])
-    
+    #result = (test[::3])*2
+    #print("\n\n El resultado es: ", result)
+
+    br = int.from_bytes(raster, byteorder='big')
     br = br*2
+
+    #print(str(br)[0:50])
+    
+    #br = br[0::2]*2
+
+    #print(str(br)[0:50])
 
     br2 = br.to_bytes((br.bit_length() + 7) // 8, 'big')
 
