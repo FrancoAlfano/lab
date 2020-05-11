@@ -39,38 +39,37 @@ def tp_1():
         img.append(leido)
         
         if len(leido) < size:
-            print("\n\n\n END OF FILE!")
+            print("\n\n\nEND OF FILE!")
             break
     
-    qData = multiprocessing.Queue()
-    qFin = multiprocessing.Queue()
-    qData.put(img)
-    qFin.put(fin)
-
-    proc = multiprocessing.Process(target=do_nothing,args=(qData,qFin,))
-    proc.start()
-    proc.join()
+    q_header = multiprocessing.Queue()
+    q_raster = multiprocessing.Queue()
+    q_fin = multiprocessing.Queue()
+    q_fin.put(fin)    
 
     listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
   
-    bytetost = str.encode(listToStr, encoding = "ISO-8859-1")
-
-    #os.write(fin, bytetost)
 
     header = check_header(listToStr)
     raster = check_raster(listToStr)
 
+    #bytetost = str.encode(listToStr, encoding = "ISO-8859-1")
+    
     if header != 0:
-        header_byte = str.encode(header)
-        #os.write(fin, header_byte)
+        header_byte = str.encode(header, encoding = "ISO-8859-1")
+        q_header.put(header_byte)
     else:
         print("error en header")
 
     if raster != 0:
-        raster_byte = str.encode(raster)
-        #os.write(fin, raster_byte)
+        raster_byte = str.encode(raster, encoding = "ISO-8859-1")
+        q_raster.put(raster_byte)
     else:
         print("error en raster")
+    
+    proc = multiprocessing.Process(target=make_file,args=(q_header, q_raster,q_fin,))    
+    proc.start()
+    proc.join()
 
     '''
     for x in range(len(img)):
@@ -80,12 +79,14 @@ def tp_1():
     os.close(fd)
     os.close(fin)    
 
-def do_nothing(qData, qFd):
+
+def make_file(q_header, q_raster, q_fin):
     print("hola mi nombre es:", os.getpid(), " y mi padre es: ", os.getppid())
-    fl = qFd.get()
-    data = qData.get()
-    for x in range(len(data)):
-        os.write(fl, data[x])
+    fin = q_fin.get()
+    header = q_header.get()
+    raster = q_raster.get()
+    os.write(fin, header)
+    os.write(fin, raster)
 
     print("done")
 
@@ -102,7 +103,7 @@ def check_header(data):
 
 def check_raster(data):
     try:
-        raster_re = r'(P6\n)((#\s*\w*\s*\w*\n\d* \d*\n\d*\n)|(\d* \d*\n\d*\n))(.*)'
+        raster_re = r'(P6\n)((#\s*\w*\s*\w*\n\d* \d*\n\d*\n)|(\d* \d*\n\d*\n))([\s\S]*)'
         success = re.search(raster_re, data)
         raster = success.group(5)
         return raster

@@ -14,7 +14,7 @@ def do_nothing(qData, qFd):
     return("done!")
 
 
-#proc = []
+proc = []
 img = []
 
 fd = os.open("dog.ppm", os.O_RDONLY)
