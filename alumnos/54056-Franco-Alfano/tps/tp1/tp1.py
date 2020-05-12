@@ -92,7 +92,7 @@ def red_img(q_red, header_byte, rojo):
     red = []
     byts = [i for i in raster_byte]   
 
-    for j in range(1,len(byts),3):
+    for j in range(0,len(byts),3):
         bit = byts[j]*rojo
         if bit > 255:
             bit = 255
@@ -120,7 +120,7 @@ def green_img(q_green, header_byte, verde):
     green = []
     byts = [i for i in raster_byte]   
 
-    for j in range(2,len(byts),3):
+    for j in range(1,len(byts),3):
         bit = byts[j]*verde
         if bit > 255:
             bit = 255
