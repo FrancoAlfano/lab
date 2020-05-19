@@ -19,9 +19,11 @@ def tp_1():
 
     args = parser.parse_args()
     
+    #Para el histograma
     numeros = []
+
     if args.red != None:
-        rojo = int(args.red)
+        rojo = float(args.red)
         numeros.append(rojo)
     
     if args.green != None:
@@ -50,6 +52,7 @@ def tp_1():
         q_blue = multiprocessing.Queue()
 
         listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
+
         q_red.put(listToStr)
         q_green.put(listToStr)
         q_blue.put(listToStr)
@@ -71,6 +74,7 @@ def tp_1():
         h_red.join()
         h_green.join()
         h_blue.join()
+
         os.close(fd)
 
         histograma(numeros)
@@ -90,10 +94,9 @@ def red_img(q_red, header_byte, rojo):
         raster_byte = str.encode(raster, encoding = "ISO-8859-1")
 
     red = []
-    byts = [i for i in raster_byte]   
 
-    for j in range(0,len(byts),3):
-        bit = byts[j]*rojo
+    for i in range(0,len(raster_byte),3):
+        bit = raster_byte[i]*rojo
         if bit > 255:
             bit = 255
         red.append(bit)
@@ -118,10 +121,9 @@ def green_img(q_green, header_byte, verde):
         raster_byte = str.encode(raster, encoding = "ISO-8859-1")
 
     green = []
-    byts = [i for i in raster_byte]   
 
-    for j in range(1,len(byts),3):
-        bit = byts[j]*verde
+    for i in range(1,len(raster_byte),3):
+        bit = raster_byte[i]*verde
         if bit > 255:
             bit = 255
         green.append(0)
@@ -144,10 +146,9 @@ def blue_img(q_blue, header_byte, azul):
         raster_byte = str.encode(raster, encoding = "ISO-8859-1")
 
     blue = []
-    byts = [i for i in raster_byte]   
 
-    for j in range(2,len(byts),3):
-        bit = byts[j]*azul
+    for i in range(2,len(raster_byte),3):
+        bit = raster_byte[i]*azul
         if bit > 255:
             bit = 255
         blue.append(0)
