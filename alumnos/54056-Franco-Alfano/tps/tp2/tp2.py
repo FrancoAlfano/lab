@@ -16,18 +16,23 @@ def tp_2():
 
     args = parser.parse_args()
 
-    archivo = args.file
     size = int(args.size)
+    archivo = args.file
+    mensaje = args.message
+    offset = int(args.offset)
+    interleave = int(args.interleave)
     output = args.output
+
 
     #print(args.size, args.file, args.message, args.offset, args.interleave, args.output)
 
     img = []
+
     try:
         fd = os.open(archivo, os.O_RDONLY)
         while True:
-            leido = os.read(fd, size)        
-            img.append(leido)            
+            leido = os.read(fd, size)
+            img.append(leido)
             if len(leido) < size:
                 print("\n\n\nEND OF FILE!")
                 break
@@ -41,7 +46,10 @@ def tp_2():
         header_byte = str.encode(header, encoding = "ISO-8859-1")
         raster_byte = str.encode(raster, encoding = "ISO-8859-1")
 
-        comment = str.encode("#UMCOPU2 OFFSET INTERLEAVE L_TOTAL\n", encoding = "ISO-8859-1")
+        comentario = "#UMCOPU2 "+str(offset)+" "+str(interleave)+" "+str(os.stat(mensaje).st_size)+"\n"
+        
+        comment = str.encode(comentario, encoding = "ISO-8859-1")
+        print("MENSAJE OCULTO: ",comment)
 
         fd_output = os.open(output, os.O_RDWR|os.O_CREAT)
         os.write(fd_output, "P6\n".encode(encoding = "ISO-8859-1"))
