@@ -3,6 +3,11 @@
 import argparse
 import os
 import re
+import threading
+import binascii
+
+text = []
+barrera = threading.Barrier(3)
 
 def tp_2():
 
@@ -23,9 +28,6 @@ def tp_2():
     interleave = int(args.interleave)
     output = args.output
 
-
-    #print(args.size, args.file, args.message, args.offset, args.interleave, args.output)
-
     img = []
 
     try:
@@ -36,9 +38,33 @@ def tp_2():
             if len(leido) < size:
                 print("\n\n\nEND OF FILE!")
                 break
+        
 
+        r = threading.Thread(target=red, args=("h",))
+        g = threading.Thread(target=green, args=("i",))
+        b = threading.Thread(target=blue, args=("e",))
+
+        r.start()
+        g.start()
+        b.start()
+
+        r.join()
+        g.join()
+        b.join()
 
         listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
+
+        byte_stri = bytes(listToStr, encoding="ISO-8859-1")
+        in_test = int.from_bytes(byte_stri, byteorder='big')
+
+        fin = bin(in_test).zfill(8)
+
+        print(fin[15:48])
+        pixel = []
+
+        pixel = [fin[i:i+8] for i in range(offset, len(fin)-offset, 8)]
+
+        print(pixel[:3])
 
         header = check_header(listToStr)
         raster = check_raster(listToStr)
@@ -49,7 +75,6 @@ def tp_2():
         comentario = "#UMCOPU2 "+str(offset)+" "+str(interleave)+" "+str(os.stat(mensaje).st_size)+"\n"
         
         comment = str.encode(comentario, encoding = "ISO-8859-1")
-        print("MENSAJE OCULTO: ",comment)
 
         fd_output = os.open(output, os.O_RDWR|os.O_CREAT)
         os.write(fd_output, "P6\n".encode(encoding = "ISO-8859-1"))
@@ -85,6 +110,28 @@ def check_raster(data):
     except AttributeError as err:
         print("Attribute Error: {0}".format(err))
         return 0
+
+def red(letra):
+    print("soy red: ", os.getpid())
+    global text
+    text.append(letra)
+    print ("1: ", text)
+    barrera.wait()
+
+def green(letra):
+    print("soy green: ", os.getpid())
+    global text
+    text.append(letra)
+    print ("2: ", text)
+    barrera.wait()
+
+
+def blue(letra):
+    print("soy blue: ", os.getpid())
+    global text
+    text.append(letra)
+    print ("3: ", text)
+    barrera.wait()
 
 
 if __name__ == "__main__":
