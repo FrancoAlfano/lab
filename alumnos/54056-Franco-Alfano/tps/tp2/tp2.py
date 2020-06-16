@@ -5,6 +5,7 @@ import os
 import re
 import threading
 import binascii
+import array
 
 text = []
 barrera = threading.Barrier(3)
@@ -40,37 +41,40 @@ def tp_2():
                 break
         
 
-        r = threading.Thread(target=red, args=("h",))
-        g = threading.Thread(target=green, args=("i",))
-        b = threading.Thread(target=blue, args=("e",))
-
-        r.start()
-        g.start()
-        b.start()
-
-        r.join()
-        g.join()
-        b.join()
-
         listToStr = ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
-
-        byte_stri = bytes(listToStr, encoding="ISO-8859-1")
-        in_test = int.from_bytes(byte_stri, byteorder='big')
-
-        fin = bin(in_test).zfill(8)
-
-        print(fin[15:48])
-        pixel = []
-
-        pixel = [fin[i:i+8] for i in range(offset, len(fin)-offset, 8)]
-
-        print(pixel[:3])
+        
+        mensaje_bin = ''.join(format(ord(x), 'b') for x in mensaje)
+        #print(mensaje_bin)
 
         header = check_header(listToStr)
         raster = check_raster(listToStr)
 
+        byte_stri = b''.join(img)
+        in_test = int.from_bytes(byte_stri, byteorder='big')
+
+        fin = bin(in_test).zfill(8)
+
+        #print(fin[15:48])
+        pixel = []
+
+        pixel = [fin[i:i+8] for i in range(offset, len(fin)-offset, 8)]
+        
+        #print(type(pixel[0]))
         header_byte = str.encode(header, encoding = "ISO-8859-1")
         raster_byte = str.encode(raster, encoding = "ISO-8859-1")
+
+        r = threading.Thread(target=red, args=(pixel,mensaje_bin,header_byte))
+        g = threading.Thread(target=green, args=(pixel,mensaje_bin,))
+        b = threading.Thread(target=blue, args=(pixel,mensaje_bin,))
+
+        r.start()
+        #g.start()
+        #b.start()
+
+        r.join()
+        #g.join()
+        #b.join()
+
 
         comentario = "#UMCOPU2 "+str(offset)+" "+str(interleave)+" "+str(os.stat(mensaje).st_size)+"\n"
         
@@ -89,6 +93,48 @@ def tp_2():
     except FileNotFoundError as err:
         print(err)
 
+def red(pixel, mensaje_bin, header_byte):
+    red = []
+    i_red = os.open("red.ppm", os.O_RDWR|os.O_CREAT)
+    i = 0
+    n = 0
+    print(mensaje_bin[0])
+    var = str(pixel[0])
+    print(var[7])
+    for n in pixel[n:len(mensaje_bin):3]:
+        lsb = int(var)
+        for j in range(0, len(mensaje_bin)):
+            if lsb != int(mensaje_bin[j]):
+                lsb = int(mensaje_bin[j])
+                red.append(pixel[0:6])
+                red.append(lsb)
+    print(red[0:5])
+
+    if(i < len(mensaje_bin)):
+        pixel[n] = int(pixel[n]) & ~1 | int(mensaje_bin[i])
+        red.append(pixel[n])
+        i+=1
+
+    red = array.array('B',red)
+    os.write(i_red, header_byte)
+    os.write(i_red, red)
+    os.close(i_red)
+    barrera.wait()
+
+def green(pixels, mensaje):
+    print("soy green: ", os.getpid())
+    global text
+    text.append(pixels)
+    #print ("2: ", text)
+    barrera.wait()
+
+
+def blue(pixels, mensaje):
+    print("soy blue: ", os.getpid())
+    global text
+    text.append(pixels)
+    #print ("3: ", text)
+    barrera.wait()
 
 
 def check_header(data):
@@ -111,27 +157,7 @@ def check_raster(data):
         print("Attribute Error: {0}".format(err))
         return 0
 
-def red(letra):
-    print("soy red: ", os.getpid())
-    global text
-    text.append(letra)
-    print ("1: ", text)
-    barrera.wait()
 
-def green(letra):
-    print("soy green: ", os.getpid())
-    global text
-    text.append(letra)
-    print ("2: ", text)
-    barrera.wait()
-
-
-def blue(letra):
-    print("soy blue: ", os.getpid())
-    global text
-    text.append(letra)
-    print ("3: ", text)
-    barrera.wait()
 
 
 if __name__ == "__main__":
