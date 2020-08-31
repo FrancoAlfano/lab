@@ -11,6 +11,9 @@ text = []
 barrera = threading.Barrier(3)
 
 def tp_2():
+    
+    #BARRIER AL FINAL DE CADA HIJO (3) QUE VALLAN ESCRIBIENDO CADA COLOR Y ESPERANDO 
+    #PARA VER QUE BLOQUES HAN SIDO LEIDOS
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--size", help="Bloque la lectura", required=True)
@@ -68,10 +71,10 @@ def tp_2():
         b = threading.Thread(target=blue, args=(pixel,mensaje_bin,))
 
         r.start()
-        #g.start()
-        #b.start()
+        g.start()
+        b.start()
 
-        r.join()
+        #r.join()
         #g.join()
         #b.join()
 

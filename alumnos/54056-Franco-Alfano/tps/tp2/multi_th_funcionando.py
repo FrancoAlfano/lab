@@ -8,23 +8,26 @@ def transferencia(monto):
     print ("Thread transf: starting")
     global saldo
     saldo = saldo + monto
-    print ("saldo 1", saldo)
+    print ("saldo 1: ", saldo)
     barrera.wait()
+    print("hola")
 
 def extrae(monto):
     print ("Thread extrae: starting")
     global saldo
     saldo = saldo - monto
-    print ("saldo 2", saldo )
+    print ("saldo 2: ", saldo )
     barrera.wait()
+    print(" soy")
 
 
 def hb(monto):
     print ("Thread hb: starting")
     global saldo
     saldo = saldo - monto
-    print ("saldo 3", saldo )
+    print ("saldo 3: ", saldo )
     barrera.wait()
+    print(" franco")
 
 
 if __name__ == "__main__":
@@ -37,5 +40,5 @@ if __name__ == "__main__":
     x.join()
     y.join()
     z.join()
-    print ("\nsaldo final ", saldo)
+    print ("\nsaldo final: ", saldo)
     exit(0)
