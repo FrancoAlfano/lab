@@ -3,19 +3,29 @@ from helpers import (
     process_image,
     get_header,
     get_raster,
-    write_image
+    write_image,
+    write_message,
+    get_message,
+    rot13
+)
+from colors import (
+    red,
+    green,
+    blue
 )
 from validations import validate_params
+from threading import Thread
 
 def main():
     params = parse_arguments()
-    path, message, block_size, offset, interleave, output = (
+    block_size, path, message, offset, interleave, output, cipher = (
+        int(params.get('block_size')),
         params.get('carrier_path'),
         params.get('message'),
-        int(params.get('block_size')),
         params.get('pixels_offset', 0),
         params.get('pixels_interleave', 0),
-        params.get('output_file')
+        params.get('output_file'),
+        params.get('cipher', 0)
     )
     
     validate_params(path, message, block_size, offset, interleave)
@@ -23,9 +33,11 @@ def main():
 
     header = get_header(image)
     raster = get_raster(image)
+    message = get_message(message)
 
-    write_image(header, raster, output, offset, interleave, message)
+    red_raster = write_message(raster, message, offset, interleave, cipher)
 
+    write_image(header, red_raster, output, offset, interleave, message, cipher)
 
     
 

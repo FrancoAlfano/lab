@@ -16,12 +16,9 @@ def validate_params(path, message, block_size, offset, interleave):
     if not os.path.exists(message):
         raise FileNotFoundError('Message file not found in path {}'.format(message))
 
-    # each pixel is 3 bytes, not including alpha
     bytes_offset = int(offset) * 3
     bytes_interleave = int(interleave) * 3
 
-    # The actual available size is the total size of the file
-    # minus the offset we wish to start from
     usable_file_size = (os.stat(path).st_size - bytes_offset)
     msg_size = os.stat(message).st_size
 

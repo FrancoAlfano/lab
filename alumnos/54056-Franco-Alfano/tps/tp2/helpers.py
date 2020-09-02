@@ -3,6 +3,7 @@ import os
 import re
 import array
 import logging
+import codecs
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -12,6 +13,7 @@ def parse_arguments():
     parser.add_argument("-t", "--offset", help="offset en pixels del inicio del raster", required=True)
     parser.add_argument("-i", "--interleave", help="interleave de modificacion en pixel", required=True)
     parser.add_argument("-o", "--output", help="estego-mensaje", required=True)
+    parser.add_argument("-c", "--cipher", help="cifrado adicional")
     args = parser.parse_args()
 
     block_size = int(args.size)
@@ -20,6 +22,7 @@ def parse_arguments():
     pixels_offset = int(args.offset)
     pixels_interleave = int(args.interleave)
     output_file = args.output
+    cipher = int(args.cipher)
 
     return {
         'block_size': block_size,
@@ -27,7 +30,8 @@ def parse_arguments():
         'message': message,
         'pixels_offset': pixels_offset,
         'pixels_interleave': pixels_interleave,
-        'output_file': output_file
+        'output_file': output_file,
+        'cipher': cipher
     }
 
 def process_image(carrier_path, block_size):
@@ -43,7 +47,8 @@ def process_image(carrier_path, block_size):
     except FileNotFoundError as err:
         logging.getLogger().error(err)
     
-    return ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])  
+    os.close(fd)
+    return ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
 
 
 def get_header(image):
@@ -68,11 +73,15 @@ def get_raster(image):
         return 0
         
 
-def write_image(head, rast, output_file, pixels_offset, pixels_interleave, message):
-    comment = "#UMCOPU2 {pixels_offset} {pixels_interleave} {l_total}".format(
+def write_image(head, rast, output_file, pixels_offset, pixels_interleave, message, cipher):
+    comment_start = "#UMCOMPU2"
+    if cipher == 1:
+        comment_start = "#UMCOMPU2-C"
+    comment = "{comment_start} {pixels_offset} {pixels_interleave} {l_total}".format(
+        comment_start= comment_start,
         pixels_offset= str(pixels_offset),
         pixels_interleave= str(pixels_interleave),
-        l_total= str(os.stat(message).st_size)
+        l_total= len(message)
     )
     try:
         fd = os.open(output_file, os.O_RDWR|os.O_CREAT)
@@ -83,4 +92,60 @@ def write_image(head, rast, output_file, pixels_offset, pixels_interleave, messa
         os.close(fd)
 
     except FileNotFoundError as err:
-        print(err)
+        logging.getLogger().error(err)
+
+
+def _encode_bin(msg):
+    return ''.join(format(ord(x), 'b').zfill(8) for x in msg)
+
+def _decode_bin(value):
+    int_value = int(value, 2)
+    return int_value.to_bytes((int_value.bit_length() + 7) // 8, 'big').decode()
+
+def write_message(raster, message, offset=0, interleave=0, cipher=0):
+    values_raster = list(raster)
+
+    # Offset y interleave estan en pixels
+    bytes_offset = offset * 3
+    bytes_interleave = (interleave * 3)
+
+    bin_message = _encode_bin(message)
+    pointer = 0
+
+    if cipher == 1:
+        message = rot13(message)
+
+    for i in range(bytes_offset, len(raster), bytes_interleave + 3):
+        try:
+            # Red, Green, Blue
+            for j in range(i, i + 3):
+                bin_character = _encode_bin(values_raster[j])
+                new_bin_character = '{}{}'.format(bin_character[:-1], bin_message[pointer])
+                values_raster[j] = _decode_bin(new_bin_character)
+                pointer += 1
+
+        except IndexError:
+            pass
+
+    return ''.join(values_raster)
+
+def get_message(message_file):
+    with open(message_file, 'r') as file:
+        message = file.read()
+    return message
+
+def rot13(message):
+    codec = "abcdefghijklmnopqrstuvwxyz"
+    codec2 = codec + codec
+
+    encrypted_message = ""
+    for letter in message:
+        index = (codec.find(letter))
+        if index >= 0:
+            encrypted_message = encrypted_message + codec2[index+13]
+        else :
+            encrypted_message = encrypted_message + letter
+    return encrypted_message
+
+
+
