@@ -13,7 +13,7 @@ def parse_arguments():
     parser.add_argument("-t", "--offset", help="offset en pixels del inicio del raster", required=True)
     parser.add_argument("-i", "--interleave", help="interleave de modificacion en pixel", required=True)
     parser.add_argument("-o", "--output", help="estego-mensaje", required=True)
-    parser.add_argument("-c", "--cipher", help="cifrado adicional")
+    parser.add_argument("-c", "--cipher", help="cifrado adicional", default=False)
     args = parser.parse_args()
 
     block_size = int(args.size)
@@ -22,7 +22,7 @@ def parse_arguments():
     pixels_offset = int(args.offset)
     pixels_interleave = int(args.interleave)
     output_file = args.output
-    cipher = int(args.cipher)
+    cipher = bool(args.cipher)
 
     return {
         'block_size': block_size,
@@ -75,7 +75,7 @@ def get_raster(image):
 
 def write_image(head, rast, output_file, pixels_offset, pixels_interleave, message, cipher):
     comment_start = "#UMCOMPU2"
-    if cipher == 1:
+    if cipher == True:
         comment_start = "#UMCOMPU2-C"
     comment = "{comment_start} {pixels_offset} {pixels_interleave} {l_total}".format(
         comment_start= comment_start,
@@ -102,22 +102,20 @@ def _decode_bin(value):
     int_value = int(value, 2)
     return int_value.to_bytes((int_value.bit_length() + 7) // 8, 'big').decode()
 
-def write_message(raster, message, offset=0, interleave=0, cipher=0):
+def write_message(raster, message, offset=0, interleave=0, cipher=False):
     values_raster = list(raster)
 
-    # Offset y interleave estan en pixels
     bytes_offset = offset * 3
     bytes_interleave = (interleave * 3)
+
+    message = check_cipher(cipher, message)
 
     bin_message = _encode_bin(message)
     pointer = 0
 
-    if cipher == 1:
-        message = rot13(message)
 
     for i in range(bytes_offset, len(raster), bytes_interleave + 3):
         try:
-            # Red, Green, Blue
             for j in range(i, i + 3):
                 bin_character = _encode_bin(values_raster[j])
                 new_bin_character = '{}{}'.format(bin_character[:-1], bin_message[pointer])
@@ -146,6 +144,11 @@ def rot13(message):
         else :
             encrypted_message = encrypted_message + letter
     return encrypted_message
+
+def check_cipher(cipher, message):
+    if cipher == 1:
+        message = rot13(message)
+    return message
 
 
 

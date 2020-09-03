@@ -8,13 +8,10 @@ from helpers import (
     get_message,
     rot13
 )
-from colors import (
-    red,
-    green,
-    blue
-)
+from colors import rgb_threads
 from validations import validate_params
 from threading import Thread
+
 
 def main():
     params = parse_arguments()
@@ -25,15 +22,16 @@ def main():
         params.get('pixels_offset', 0),
         params.get('pixels_interleave', 0),
         params.get('output_file'),
-        params.get('cipher', 0)
+        params.get('cipher')
     )
-    
+
     validate_params(path, message, block_size, offset, interleave)
     image = process_image(path, block_size)
-
     header = get_header(image)
     raster = get_raster(image)
     message = get_message(message)
+
+    rgb_threads(raster, message)
 
     red_raster = write_message(raster, message, offset, interleave, cipher)
 
