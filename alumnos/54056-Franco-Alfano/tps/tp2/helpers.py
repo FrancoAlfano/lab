@@ -101,7 +101,7 @@ def _encode_bin(msg):
 def _decode_bin(value):
     int_value = int(value, 2)
     return int_value.to_bytes((int_value.bit_length() + 7) // 8, 'big').decode()
-
+    
 def write_message(raster, message, offset=0, interleave=0, cipher=False):
     values_raster = list(raster)
 

@@ -31,9 +31,9 @@ def main():
     raster = get_raster(image)
     message = get_message(message)
 
-    rgb_threads(raster, message)
+    red_raster = rgb_threads(raster, message, offset, interleave, cipher)
 
-    red_raster = write_message(raster, message, offset, interleave, cipher)
+    #red_raster = write_message(raster, message, offset, interleave, cipher)
 
     write_image(header, red_raster, output, offset, interleave, message, cipher)
 
