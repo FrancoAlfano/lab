@@ -12,16 +12,19 @@ offset = 0
 interleave = 0
 cipher = False
 
-def red(message, msj_size):
-    write_image(message)
+def red(red_msj):
+    color = 0
+    write_image(red_msj, color)
     barrera.wait()
 
-def green(raster, message):
-    print("green!")
+def green(green_msj):
+    color = 1
+    write_image(green_msj, color)
     barrera.wait()
 
-def blue(raster, message):
-    print("blue!")
+def blue(blue_msj):
+    color = 2
+    write_image(blue_msj, color)
     barrera.wait()
 
 
@@ -38,24 +41,36 @@ def rgb_threads(ras, message, off=0, inter=0, ci=False):
     cipher = ci
     msj_size = len(message)
 
-    message = check_cipher(cipher, message)
 
-    red_thread = Thread(target=red, args=(message, msj_size))
-    green_thread = Thread(target=green, args=(raster, message,))
-    blue_thread = Thread(target=blue, args=(raster, message,))
+    message = check_cipher(cipher, message)
+    m = list(message)
+
+    red_msj = m[0::3]
+    green_msj = m[1::3]
+    blue_msj = m[2::3]
+
+    print("RED: ", red_msj, " GREEN: ", green_msj, " BLUE: ", blue_msj)
+
+    red_thread = Thread(target=red, args=(red_msj,))
+    green_thread = Thread(target=green, args=(green_msj,))
+    blue_thread = Thread(target=blue, args=(blue_msj,))
 
     red_thread.start()
     green_thread.start()
     blue_thread.start()
 
+    red_thread.join()
+    green_thread.join()
+    blue_thread.join()
+
+    raster = ''.join(raster)
     return raster
 
 
-def write_image(message):
+def write_image(message, color):
     global raster
     global offset
     global interleave
-    global cipher
 
     values_raster = list(raster)
 
@@ -65,10 +80,12 @@ def write_image(message):
     bin_message = _encode_bin(message)
     pointer = 0
 
+    j = 0
+    #j = j + color
+
     for i in range(bytes_offset, len(raster), bytes_interleave + 3):
         try:
-            # Red, Green, Blue
-            for j in range(i, i + 3):
+            for j in range(i, i + color):
                 bin_character = _encode_bin(values_raster[j])
                 new_bin_character = '{}{}'.format(bin_character[:-1], bin_message[pointer])
                 values_raster[j] = _decode_bin(new_bin_character)
@@ -77,4 +94,5 @@ def write_image(message):
         except IndexError:
             pass
 
-    raster = ''.join(values_raster)
+    raster = values_raster
+    #raster = ''.join(values_raster)
