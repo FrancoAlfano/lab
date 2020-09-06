@@ -1,98 +1,102 @@
-from threading import Barrier, Thread
+from threading import Thread, Barrier
 from helpers import (
     check_cipher,
     _encode_bin,
     _decode_bin
 )
 
+color_red = 'red'
+color_green = 'green'
+color_blue = 'blue'
+
+colors_offset = {
+    color_red: 0,
+    color_green: 1,
+    color_blue: 2,
+}
+
 barrera = Barrier(3)
-raster = None
-msj_size = 0
-offset = 0
-interleave = 0
-cipher = False
 
-def red(red_msj):
-    color = 0
-    write_image(red_msj, color)
+colors_order = [color_red, color_green, color_blue]
+
+
+def red(message, raster, offset, interleave):
+    write_image(color_red, message, raster, offset, interleave)
     barrera.wait()
 
-def green(green_msj):
-    color = 1
-    write_image(green_msj, color)
+def green(message, raster, offset, interleave):
+    write_image(color_green, message, raster, offset, interleave)
     barrera.wait()
 
-def blue(blue_msj):
-    color = 2
-    write_image(blue_msj, color)
+def blue(message, raster, offset, interleave):
+    write_image(color_blue, message, raster, offset, interleave)
     barrera.wait()
 
+def assign_bits_to_colors(bin_message):
+    color_groups = {
+        color_red: [],
+        color_green: [],
+        color_blue: [],
+    }
+    rgb_position = 0
 
-def rgb_threads(ras, message, off=0, inter=0, ci=False):
-    global raster
-    global msj_size
-    global offset
-    global interleave
-    global cipher
+    #Iteramos el bin_message asignandole red, green y blue
+    #Por cada bit hasta que tenemos 3 mensajes distintos
+    #uno por cada color
+    for bit in bin_message:
+        color = colors_order[rgb_position]
+        color_groups[color].append(bit)
+        rgb_position += 1
 
-    raster = ras
-    offset = off
-    interleave = inter
-    cipher = ci
-    msj_size = len(message)
+        if rgb_position == len(colors_order):
+            rgb_position = 0
+    
+    return color_groups
 
-
+def rgb_threads(raster, message, offset=0, interleave=0, cipher=False):
     message = check_cipher(cipher, message)
-    m = list(message)
 
-    red_msj = m[0::3]
-    green_msj = m[1::3]
-    blue_msj = m[2::3]
+    values_raster = list(raster)
+    bin_message = _encode_bin(message)
+    bits_by_color = assign_bits_to_colors(bin_message)
 
-    print("RED: ", red_msj, " GREEN: ", green_msj, " BLUE: ", blue_msj)
-
-    red_thread = Thread(target=red, args=(red_msj,))
-    green_thread = Thread(target=green, args=(green_msj,))
-    blue_thread = Thread(target=blue, args=(blue_msj,))
+    #Creamos los hilos para cada color
+    red_thread = Thread(target=red, args=(bits_by_color[color_red], values_raster, offset, interleave))
+    green_thread = Thread(target=green, args=(bits_by_color[color_green], values_raster, offset, interleave))
+    blue_thread = Thread(target=blue, args=(bits_by_color[color_blue], values_raster, offset, interleave))
 
     red_thread.start()
     green_thread.start()
     blue_thread.start()
 
+    #Esperamos que los hilos terminen para seguir con el padre
     red_thread.join()
     green_thread.join()
     blue_thread.join()
 
-    raster = ''.join(raster)
-    return raster
+    print('All threads are finished!\n')
+
+    return ''.join(values_raster)
 
 
-def write_image(message, color):
-    global raster
-    global offset
-    global interleave
-
-    values_raster = list(raster)
-
+def write_image(color, message_bits, raster, offset, interleave):
+    # Offset y Interleave los multiplicamos por 3 porque cada
+    #pixel tiene 3 bytes de colores: rojo, verde y azul
     bytes_offset = offset * 3
     bytes_interleave = (interleave * 3)
 
-    bin_message = _encode_bin(message)
+    color_offset = colors_offset[color]
     pointer = 0
-
-    j = 0
-    #j = j + color
 
     for i in range(bytes_offset, len(raster), bytes_interleave + 3):
         try:
-            for j in range(i, i + color):
-                bin_character = _encode_bin(values_raster[j])
-                new_bin_character = '{}{}'.format(bin_character[:-1], bin_message[pointer])
-                values_raster[j] = _decode_bin(new_bin_character)
-                pointer += 1
+            bit_position = i + color_offset
+            bin_character = _encode_bin(raster[bit_position])
+            new_bin_character = '{}{}'.format(bin_character[:-1], message_bits[pointer])
+            raster[bit_position] = _decode_bin(new_bin_character)
+            pointer += 1
 
+        # Da index error cuando se nos termina el mensaje a escribir
         except IndexError:
-            pass
-
-    raster = values_raster
-    #raster = ''.join(values_raster)
+            print('Finished thread for {}!\n'.format(color))
+            return

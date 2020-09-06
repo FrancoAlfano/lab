@@ -8,9 +8,12 @@ from helpers import (
     get_message,
     rot13
 )
+from time import perf_counter
 from colors import rgb_threads
 from validations import validate_params
 from threading import Thread
+
+start = perf_counter()
 
 
 def main():
@@ -31,11 +34,13 @@ def main():
     raster = get_raster(image)
     message = get_message(message)
 
-    red_raster = rgb_threads(raster, message, offset, interleave, cipher)
+    raster = rgb_threads(raster, message, offset, interleave, cipher)
 
-    #red_raster = write_message(raster, message, offset, interleave, cipher)
+    write_image(header, raster, output, offset, interleave, message, cipher)
 
-    write_image(header, red_raster, output, offset, interleave, message, cipher)
+    finish = perf_counter()
+    tt = round(finish-start,3)
+    print ("Total time: ",tt)
 
     
 
