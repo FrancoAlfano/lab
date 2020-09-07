@@ -15,10 +15,9 @@ colors_offset = {
     color_blue: 2,
 }
 
-barrera = Barrier(3)
-
 colors_order = [color_red, color_green, color_blue]
 
+barrera = Barrier(3)
 
 def red(message, raster, offset, interleave):
     write_image(color_red, message, raster, offset, interleave)

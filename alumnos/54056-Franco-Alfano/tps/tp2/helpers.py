@@ -146,7 +146,7 @@ def rot13(message):
     return encrypted_message
 
 def check_cipher(cipher, message):
-    if cipher == 1:
+    if cipher == True:
         message = rot13(message)
     return message
 

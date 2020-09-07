@@ -4,14 +4,11 @@ from helpers import (
     get_header,
     get_raster,
     write_image,
-    write_message,
-    get_message,
-    rot13
+    get_message
 )
 from time import perf_counter
 from colors import rgb_threads
 from validations import validate_params
-from threading import Thread
 
 start = perf_counter()
 
