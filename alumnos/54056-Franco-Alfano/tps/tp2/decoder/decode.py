@@ -39,7 +39,7 @@ def extract_message(file_path, msg_length, offset=0, interleave=0, cipher=False)
             if bin_msg_length == 0:
                 empty_buffer = True
                 break
-    if cipher == True:
-        return rot13(_decode_bin(bin_message))
+    #if cipher == True:
+    #    return rot13(_decode_bin(bin_message))
         
     return _decode_bin(bin_message)
