@@ -68,3 +68,31 @@ def blue_img(data, header_byte, blue_intensity):
     os.close(i_blue)
     logging.info('Finished filter blue!\n')
 
+def black_white(data, header_byte, bw_intensity):
+    i_bw = os.open("bw.ppm", os.O_RDWR|os.O_CREAT)
+    raster = get_raster(data)
+    raster_byte = str.encode(raster, encoding = "ISO-8859-1")
+    bw = []
+    nums = []
+    adds = []
+
+    for i in range(0,len(raster_byte),3):
+        bit = raster_byte[i]*bw_intensity
+        nums.append(bit)
+
+    composite_list = [nums[x:x+3] for x in range(0, len(nums),3)]
+    for n in composite_list:
+        color = int(sum(n)/3)
+        if color > 255:
+            color = 255
+        adds.append(color)
+
+    for j in range(len(adds), 3):
+        bw.append(adds[j])
+
+    bw = array('B',bw)
+    os.write(i_bw, header_byte)
+    os.write(i_bw, bw)
+    os.close(i_bw)
+    logging.info('Finished filter bw!\n')
+

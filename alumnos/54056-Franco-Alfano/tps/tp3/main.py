@@ -3,11 +3,12 @@ from helpers import (
     process_image,
     get_header
 )
-from server import service
+#from server import service
 from filters import (
     red_img,
     green_img,
-    blue_img
+    blue_img,
+    black_white
 )
 
 def main():
@@ -20,13 +21,12 @@ def main():
         params.get('red_intensity')
     )
 
-    #image = process_image(carrier_path, size)
-    #header = get_header(image)
+    image = process_image(carrier_path, size)
+    header = get_header(image)
     #red_img(image, header, red_intensity)
     #green_img(image, header, red_intensity)
     #blue_img(image, header, red_intensity)
-
-    
+    black_white(image, header, red_intensity) 
 
 
 

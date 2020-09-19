@@ -1,4 +1,4 @@
-import socket
+import socket as s
 from threading import Thread
 import signal
 
@@ -10,13 +10,13 @@ def service(s2, addr):
     print(sent)
     s2.close()
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind(("127.0.0.1", 5000))
-s.listen(1)
+soc = s.socket(s.AF_INET, s.SOCK_STREAM)
+soc.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
+soc.bind(("127.0.0.1", 5000))
+soc.listen(1)
 
 while True:
-    s2, addr = s.accept()
+    s2, addr = soc.accept()
     hilo = Thread(target=service, args= (s2, addr,))
     hilo.start()
     hilo.join()
