@@ -6,6 +6,10 @@ from helpers import (
     get_raster
 )
 
+# By default logging does not print info level messages
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
+
 def red_img(data, header_byte, red_intensity):
     i_red = os.open("red.ppm", os.O_RDWR|os.O_CREAT)
     raster = get_raster(data)
@@ -24,7 +28,7 @@ def red_img(data, header_byte, red_intensity):
     os.write(i_red, header_byte)
     os.write(i_red, red)
     os.close(i_red)
-    logging.info('Finished filter red!\n')
+    logger.info('Finished filter red!\n')
 
 
 def green_img(data, header_byte, gree_intensity):
@@ -45,7 +49,7 @@ def green_img(data, header_byte, gree_intensity):
     os.write(i_green, header_byte)
     os.write(i_green, green)
     os.close(i_green)
-    logging.info('Finished filter green!\n')
+    logger.info('Finished filter green!\n')
 
 
 def blue_img(data, header_byte, blue_intensity):
@@ -66,7 +70,7 @@ def blue_img(data, header_byte, blue_intensity):
     os.write(i_blue, header_byte)
     os.write(i_blue, blue)
     os.close(i_blue)
-    logging.info('Finished filter blue!\n')
+    logger.info('Finished filter blue!\n')
 
 def black_white(data, header_byte, bw_intensity):
     i_bw = os.open("bw.ppm", os.O_RDWR|os.O_CREAT)
@@ -80,19 +84,20 @@ def black_white(data, header_byte, bw_intensity):
         bit = raster_byte[i]*bw_intensity
         nums.append(bit)
 
-    composite_list = [nums[x:x+3] for x in range(0, len(nums),3)]
+    composite_list = [nums[x:x+3] for x in range(0, len(nums))]
     for n in composite_list:
         color = int(sum(n)/3)
         if color > 255:
             color = 255
         adds.append(color)
 
-    for j in range(len(adds), 3):
+    for j in range(0, len(adds)):
+        bw.append(adds[j])
+        bw.append(adds[j])
         bw.append(adds[j])
 
     bw = array('B',bw)
     os.write(i_bw, header_byte)
     os.write(i_bw, bw)
     os.close(i_bw)
-    logging.info('Finished filter bw!\n')
-
+    logger.info('Finished filter bw!\n')
