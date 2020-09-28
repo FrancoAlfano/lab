@@ -21,9 +21,8 @@ class Handler(socketserver.BaseRequestHandler):
             file = './index.html'
         ext = file.split('.')[2]
 
-        test = file.find("ppm")
-        print("TEST:  qweqweQWE", test)
-        if test > 0:
+        ppm = file.find("ppm")
+        if ppm > 0:
             image = file.split('&')
             name = image[0].split('=')
             color = image[1].split('=')
