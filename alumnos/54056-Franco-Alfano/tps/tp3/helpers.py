@@ -8,22 +8,16 @@ def parse_arguments():
     parser.add_argument("-d", "--dir", help="Directorio donde estan los documentos web", required=True)
     parser.add_argument("-p", "--port", help="Puerto en donde espera conexiones nuevas", required=True)
     parser.add_argument("-s", "--size", help="Bloque de lectura máxima para los documentos", required=True)
-    parser.add_argument("-f", "--file", help="Archivo portador", required=True)
-    parser.add_argument("-r", "--red", help="Intensidad del color rojo", required=True)
     args = parser.parse_args()
 
     directory = args.dir
     port = args.port
     size = args.size
-    carrier_path = args.file
-    red_intensity = args.red
     
     return {
         'directory': directory,
         'port': int(port),
-        'size': int(size),
-        'carrier_path': carrier_path,
-        'red_intensity': int(red_intensity)
+        'size': int(size)
     }
 
 def get_header(data):

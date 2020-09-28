@@ -18,17 +18,7 @@ def main():
         params.get('directory'),
         params.get('port'),
         params.get('size')
-        #params.get('carrier_path'),
-        #params.get('red_intensity')
-    )
-
-
-    #image = process_image(carrier_path, size)
-    #header = get_header(image)
-    #red_img(image, header, red_intensity)
-    #green_img(image, header, red_intensity)
-    #blue_img(image, header, red_intensity)
-    #black_white(image, header, red_intensity) 
+    ) 
 
     ss.ThreadingTCPServer.allow_reuse_address = True
     server =  ss.ThreadingTCPServer(("0.0.0.0", port), Handler)
