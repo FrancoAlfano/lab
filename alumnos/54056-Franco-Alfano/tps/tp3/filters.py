@@ -3,12 +3,14 @@ import logging
 from array import array
 from helpers import (
     get_header,
-    get_raster
+    get_raster,
+    process_image
 )
 
 # By default logging does not print info level messages
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
+
 
 def red_img(data, header_byte, red_intensity):
     i_red = os.open("red.ppm", os.O_RDWR|os.O_CREAT)
@@ -81,7 +83,7 @@ def black_white(data, header_byte, bw_intensity):
     adds = []
 
     for i in range(0,len(raster_byte),3):
-        bit = raster_byte[i]*bw_intensity
+        bit = raster_byte[i]
         nums.append(bit)
 
     composite_list = [nums[x:x+3] for x in range(0, len(nums))]
@@ -101,3 +103,16 @@ def black_white(data, header_byte, bw_intensity):
     os.write(i_bw, bw)
     os.close(i_bw)
     logger.info('Finished filter bw!\n')
+
+
+def apply_filter(image_name, color, intensity, reading_block):
+    data = process_image(image_name, reading_block)
+    header = get_header(data)
+    if color == 'R':
+        red_img(data, header, intensity)
+    if color == 'G':
+        green_img(data, header, intensity)
+    if color == 'B':
+        blue_img(data, header, intensity)
+    if color == 'BW':
+        black_white(data, header, intensity)

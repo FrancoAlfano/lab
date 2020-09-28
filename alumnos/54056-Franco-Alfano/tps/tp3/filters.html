@@ -1,13 +1,26 @@
 <html>     
-    <form action="dog.ppm" method="get">
+    <form action="/" method="GET">
         <p>
-            Filters: <br>
-            File: dog.ppm &nbsp; &nbsp;
+            Images:
+            <input type="radio" name="image" value="dog.ppm"> Dog
+            <input type="radio" name="image" value="yacht.ppm"> Yacht
+        </p>
+        <p>
+            Filters:
             <input type="radio" name="filter" value="R"> Red
             <input type="radio" name="filter" value="G"> Green
             <input type="radio" name="filter" value="B"> Blue
             <input type="radio" name="filter" value="BW"> Black and White
         </p>
+        <p>
+            Intensity of Filter:
+            <input type="number" name="intensity" min="0">
+        </p>
+        <p>
+            Reading Block:
+            <input type="number" name="block" min="1">
+        </p>
+        
         <p><input type="submit" value="Send"></p>
     </form>
     <a href="/">Back</a>   

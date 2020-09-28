@@ -45,7 +45,7 @@ def get_raster(data):
         return 0
 
 def process_image(carrier_path, block_size):
-    img = []      
+    img = []
     try:
         fd = os.open(carrier_path, os.O_RDONLY)
         while True:
@@ -53,9 +53,10 @@ def process_image(carrier_path, block_size):
             img.append(buffer_read)
             if len(buffer_read) < block_size:
                 break
+        os.close(fd)
 
     except FileNotFoundError as err:
         logging.getLogger().error(err)
     
-    os.close(fd)
+    
     return ''.join([(bytes.decode(elem, encoding = "ISO-8859-1")) for elem in img])
