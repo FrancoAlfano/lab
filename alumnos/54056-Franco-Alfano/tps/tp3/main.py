@@ -21,7 +21,7 @@ def main():
         params.get('size')
     ) 
 
-    ss.ThreadingTCPServer.allow_reuse_address = True
+    ss.ForkingTCPServer.allow_reuse_address = True
     server =  ss.ThreadingTCPServer(("0.0.0.0", port), Handler)
     server_thread = threading.Thread(target=server.serve_forever)
     server_thread.start()
